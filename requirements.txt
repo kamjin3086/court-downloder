@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+beautifulsoup4
+httpx
+pydantic
+jinja2
+python-multipart

@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电子送达文书批量下载助手</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover-color: #0056b3;
+            --background-color: #f8f9fa;
+            --container-bg: #ffffff;
+            --text-color: #343a40;
+            --muted-color: #6c757d;
+            --border-color: #dee2e6;
+            --error-bg: #f8d7da;
+            --error-border: #f5c6cb;
+            --error-text: #721c24;
+            --info-bg: #d1ecf1;
+            --info-border: #bee5eb;
+            --info-text: #0c5460;
+        }
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            margin: 0;
+            min-height: 100vh;
+            box-sizing: border-box;
+            line-height: 1.6;
+        }
+        .main-container {
+            background-color: var(--container-bg);
+            padding: 30px 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+            width: 100%;
+            max-width: 750px; 
+            box-sizing: border-box;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        header h1 {
+            color: var(--text-color);
+            margin-bottom: 8px;
+            font-size: 26px;
+            font-weight: 700;
+        }
+        header p {
+            color: var(--muted-color);
+            font-size: 15px;
+            margin-bottom: 0;
+        }
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-size: 14px;
+        }
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 14px;
+            min-height: 110px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+        }
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            width: 100%;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            display: flex; 
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        button:hover {
+            background-color: var(--primary-hover-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+        button:disabled {
+            background-color: #adb5bd;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        button svg {
+            margin-right: 8px;
+            width: 16px;
+            height: 16px;
+        }
+        .document-list-container {
+             margin-top: 15px;
+             padding-top: 20px;
+             border-top: 1px solid #e9ecef; 
+        }
+        .document-list {
+            min-height: 50px; 
+            color: var(--muted-color);
+        }
+        .document-list p#placeholder-text {
+            margin: 10px 0;
+            padding: 8px 0;
+            font-size: 14px;
+            text-align: center;
+        }
+        .document-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 5px;
+            border-bottom: 1px solid #e9ecef;
+            transition: background-color 0.2s ease;
+            font-size: 15px;
+        }
+        .document-item:last-child {
+            border-bottom: none;
+        }
+        .document-item:hover {
+            background-color: #f1f3f5;
+        }
+        .document-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+            flex-grow: 1; 
+            margin-left: 12px;
+        }
+        .document-item a:hover {
+            text-decoration: underline;
+            color: var(--primary-hover-color);
+        }
+        .document-icon {
+            width: 18px;
+            height: 18px;
+            fill: #dc3545; /* PDF red - keep for clarity */
+            flex-shrink: 0; 
+        }
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #fff; 
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .status-message {
+             text-align: center;
+             padding: 10px 15px;
+             border-radius: 5px;
+             margin-top: 15px;
+             font-size: 14px;
+             border: 1px solid transparent;
+        }
+        .status-error {
+            background-color: var(--error-bg);
+            border-color: var(--error-border);
+            color: var(--error-text);
+        }
+        .status-info {
+            background-color: var(--info-bg);
+            border-color: var(--info-border);
+            color: var(--info-text);
+        }
+        .disclaimer {
+            font-size: 12px;
+            color: var(--muted-color);
+            margin-top: 30px;
+            text-align: center;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            max-width: 750px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .disclaimer strong {
+            color: var(--text-color);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>电子送达文书批量下载助手</h1>
+        <p>粘贴法院发送的包含文书链接的短信内容，快速解析并准备下载。</p>
+    </header>
+
+    <div class="main-container">
+        <label for="sms-content">送达短信内容</label>
+        <textarea id="sms-content" placeholder="请在此粘贴完整的法院送达短信..."></textarea>
+        <button id="fetch-button" onclick="fetchDocuments()">
+             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px;"><path d="M14.5 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V7.5L14.5 2ZM12 10C11.4477 10 11 10.4477 11 11V13H9C8.44772 13 8 13.4477 8 14C8 14.5523 8.44772 15 9 15H11V17C11 17.5523 11.4477 18 12 18C12.5523 18 13 17.5523 13 17V15H15C15.5523 15 16 14.5523 16 14C16 13.4477 15.5523 13 15 13H13V11C13 10.4477 12.5523 10 12 10ZM14 3V7H19L14 3Z"></path></svg>
+            <span id="button-text">解析文书列表</span>
+        </button>
+    </div>
+
+    <div class="main-container">
+        <label>可下载文书</label>
+        <div class="document-list-container">
+            <div id="document-list" class="document-list">
+                <p id="placeholder-text">请先粘贴短信内容并点击解析按钮。</p>
+                <!-- Document items will be added here -->
+            </div>
+        </div>
+        <div id="status-message" class="status-message" style="display: none;"></div>
+        <!-- Download All Button -->
+        <button id="download-all-button" style="margin-top: 20px; display: none;" onclick="downloadAll()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px; width:16px; height:16px;"><path d="M12 2C11.4477 2 11 2.44772 11 3V13.5858L8.70711 11.2929C8.31658 10.9024 7.68342 10.9024 7.29289 11.2929C6.90237 11.6834 6.90237 12.3166 7.29289 12.7071L11.2929 16.7071C11.6834 17.0976 12.3166 17.0976 12.7071 16.7071L16.7071 12.7071C17.0976 12.3166 17.0976 11.6834 16.7071 11.2929C16.3166 10.9024 15.6834 10.9024 15.2929 11.2929L13 13.5858V3C13 2.44772 12.5523 2 12 2ZM4 16C4 15.4477 4.44772 15 5 15H7C7.55228 15 8 15.4477 8 16C8 16.5523 7.55228 17 7 17H5V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V17H17C16.4477 17 16 16.5523 16 16C16 15.4477 16.4477 15 17 15H19C19.5523 15 20 15.4477 20 16V19C20 20.6569 18.6569 22 17 22H7C5.34315 22 4 20.6569 4 19V16Z"/></svg>
+            <span id="download-button-text">打包下载全部 (ZIP)</span>
+        </button>
+    </div>
+
+    <div class="disclaimer">
+        <strong>免责声明:</strong>
+        本工具为非官方辅助工具，旨在方便用户批量处理电子送达文书，请自行承担使用风险。
+        本工具通过解析您提供的链接与法院官方系统进行交互，请确保您的使用行为符合相关法律法规及官方平台的用户协议。
+        开发者不对因使用本工具可能导致的任何数据丢失、信息泄露、法律纠纷或任何直接、间接损失负责。
+        请务必核对下载文件的准确性和完整性。本工具依赖于法院官方平台的接口结构，如遇平台更新可能导致功能失效。
+    </div>
+
+    <script>
+        const smsContent = document.getElementById('sms-content');
+        const fetchButton = document.getElementById('fetch-button');
+        const buttonText = document.getElementById('button-text');
+        const documentListDiv = document.getElementById('document-list');
+        const placeholderText = document.getElementById('placeholder-text');
+        const statusMessageDiv = document.getElementById('status-message');
+        const downloadAllButton = document.getElementById('download-all-button');
+        const downloadButtonText = document.getElementById('download-button-text');
+
+        let currentApiParams = null;
+
+        async function fetchDocuments() {
+            const content = smsContent.value.trim();
+            if (!content) {
+                showStatus("请输入短信内容。", "error");
+                return;
+            }
+
+            currentApiParams = null;
+            fetchButton.disabled = true;
+            buttonText.textContent = '正在解析...';
+            const spinner = document.createElement('div');
+            spinner.className = 'loading-spinner';
+            fetchButton.insertBefore(spinner, buttonText);
+            documentListDiv.innerHTML = '';
+            placeholderText.style.display = 'none';
+            statusMessageDiv.style.display = 'none';
+            downloadAllButton.style.display = 'none'; 
+
+            try {
+                const formData = new FormData();
+                formData.append('sms_content', content);
+
+                const response = await fetch('/get_documents', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `服务器错误: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                const urlMatch = content.match(/(https?:\/\/zxfw\.court\.gov\.cn\/[^\s]+)/);
+                if (urlMatch) {
+                     try {
+                         const inputUrl = new URL(urlMatch[0]);
+                         let paramsSource = null;
+                         if (inputUrl.hash && inputUrl.hash.includes('?')) {
+                             paramsSource = new URLSearchParams(inputUrl.hash.split('?')[1] || '');
+                         } 
+                         else if (inputUrl.search) {
+                             paramsSource = inputUrl.searchParams;
+                         }
+
+                         if (paramsSource) {
+                             currentApiParams = {
+                                 sdbh: paramsSource.get('sdbh'),
+                                 qdbh: paramsSource.get('qdbh'),
+                                 sdsin: paramsSource.get('sdsin')
+                             };
+                             if (!currentApiParams.sdbh || !currentApiParams.qdbh || !currentApiParams.sdsin) {
+                                  console.warn("Could not parse all params (sdbh, qdbh, sdsin) from URL for download button.", currentApiParams);
+                                  currentApiParams = null; 
+                             } else {
+                                  console.log("Successfully parsed params for download button:", currentApiParams);
+                             }
+                         } else {
+                              console.warn("Could not find query parameters in URL fragment or search part for download button.");
+                              currentApiParams = null;
+                         }
+                    } catch(e) {
+                         console.error("Error parsing URL for download params:", e);
+                         currentApiParams = null;
+                    }
+                } else {
+                    console.warn("Could not find URL in input to extract params for download button.");
+                    currentApiParams = null; 
+                }
+                
+                displayDocuments(data.documents);
+
+            } catch (error) {
+                console.error('获取文书列表失败:', error);
+                showStatus(`解析失败: ${error.message}`, "error");
+                placeholderText.style.display = 'block';
+                placeholderText.textContent = '解析文书列表失败，请检查短信内容或稍后再试。';
+                downloadAllButton.style.display = 'none'; 
+            } finally {
+                 fetchButton.disabled = false;
+                 buttonText.textContent = '解析文书列表';
+                 const existingSpinner = fetchButton.querySelector('.loading-spinner');
+                 if (existingSpinner) {
+                     fetchButton.removeChild(existingSpinner);
+                 }
+            }
+        }
+
+        function displayDocuments(documents) {
+            documentListDiv.innerHTML = '';
+
+            if (!documents || documents.length === 0) {
+                placeholderText.style.display = 'block';
+                placeholderText.textContent = '未找到任何可下载文书。请检查链接是否有效或接口已更改。';
+                downloadAllButton.style.display = 'none';
+                currentApiParams = null; 
+                return;
+            }
+
+            if (currentApiParams) {
+                 downloadAllButton.style.display = 'flex'; 
+            } else {
+                 downloadAllButton.style.display = 'none';
+                 console.warn("Download All button hidden because API parameters could not be determined.");
+            }
+
+            documents.forEach(doc => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'document-item';
+
+                const iconSvg = `<svg class="document-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17 6H22V8H20V20C20 21.1046 19.1046 22 18 22H6C4.89543 22 4 21.1046 4 20V4C4 2.89543 4.89543 2 6 2H14.1716C14.702 2 15.2107 2.21071 15.5858 2.58579L19.4142 6.41421C19.7893 6.78929 20 7.29799 20 7.82843V8H18C17.4477 8 17 7.55228 17 7V6ZM18 8V6.41421L14.5858 3H6V20H18V8Z M8 10H16V12H8V10ZM8 14H16V16H8V14Z"/></svg>`;
+
+                itemDiv.innerHTML = `
+                    ${iconSvg}
+                    <a href="${doc.url}" target="_blank" download="${doc.name}.pdf">${doc.name}</a>
+                `; 
+
+                documentListDiv.appendChild(itemDiv);
+            });
+        }
+
+        function showStatus(message, type = "info") {
+            statusMessageDiv.textContent = message;
+            statusMessageDiv.className = `status-message status-${type}`;
+            statusMessageDiv.style.display = 'block';
+        }
+
+        async function downloadAll() {
+            if (!currentApiParams) {
+                showStatus("无法获取下载所需参数，请重试。", "error");
+                return;
+            }
+
+            downloadAllButton.disabled = true;
+            downloadButtonText.textContent = '正在打包...';
+            const spinner = document.createElement('div');
+            spinner.className = 'loading-spinner';
+            downloadAllButton.insertBefore(spinner, downloadButtonText);
+            showStatus("正在准备 ZIP 文件，文件较多时可能需要一些时间...", "info");
+
+            try {
+                const response = await fetch('/download_all', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(currentApiParams) 
+                });
+
+                if (!response.ok) {
+                    let errorDetail = `打包下载失败: ${response.status}`;
+                    try {
+                         const errorData = await response.json();
+                         errorDetail = errorData.detail || errorDetail;
+                    } catch(e) { /* Ignore if response is not json */ }
+                    throw new Error(errorDetail);
+                }
+
+                const blob = await response.blob();
+                const contentDisposition = response.headers.get('content-disposition');
+                let filename = '法院文书合集.zip';
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename\*?=(?:UTF-8'')?([^;]+)/i);
+                    if (filenameMatch && filenameMatch[1]) {
+                        filename = decodeURIComponent(filenameMatch[1].replace(/"/g, ''));
+                    } else {
+                        const filenameFallbackMatch = contentDisposition.match(/filename="?([^;"]+)"?/i);
+                         if (filenameFallbackMatch && filenameFallbackMatch[1]) {
+                             filename = filenameFallbackMatch[1];
+                         }
+                    }
+                }
+
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href); 
+                showStatus("ZIP 文件已开始下载。", "info");
+
+            } catch (error) {
+                console.error('打包下载失败:', error);
+                showStatus(`打包下载失败: ${error.message}`, "error");
+            } finally {
+                downloadAllButton.disabled = false;
+                downloadButtonText.textContent = '打包下载全部 (ZIP)';
+                const existingSpinner = downloadAllButton.querySelector('.loading-spinner');
+                if (existingSpinner) {
+                    downloadAllButton.removeChild(existingSpinner);
+                }
+            }
+        }
+
+    </script>
+
+</body>
+</html> 
