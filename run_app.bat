@@ -40,10 +40,11 @@ if %errorlevel% neq 0 (
 )
 
 REM --- 安装/检查依赖 ---
-echo Checking and installing dependencies from requirements.txt...
+echo Checking and installing dependencies from requirements.txt using Tsinghua mirror...
 REM Using pip install ensures latest versions specified are installed
 REM and verifies existing installations.
-pip install -r requirements.txt
+REM Added -i for Tsinghua mirror
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 if %errorlevel% neq 0 (
     echo Error: Failed to install dependencies.
     goto EndScript

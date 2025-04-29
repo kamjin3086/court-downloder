@@ -44,8 +44,8 @@ if [ $? -ne 0 ]; then
 fi
 
 # --- Install/Check Dependencies ---
-echo "Checking and installing dependencies from requirements.txt..."
-pip install -r requirements.txt
+echo "Checking and installing dependencies from requirements.txt using Tsinghua mirror..."
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 if [ $? -ne 0 ]; then
     echo "Error: Failed to install dependencies."
     # Deactivate venv before exiting on error
