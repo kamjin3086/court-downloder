@@ -17,6 +17,16 @@
 *   **操作系统:** Windows, macOS, 或 Linux。
 *   **网络连接:** 需要连接互联网以下载依赖库和访问法院 API。
 
+## 快速使用 (Quick Start)
+
+1.  **确保已安装 Python 3.10 或更高版本。**
+2.  **下载并解压** 项目文件到一个文件夹。
+3.  **运行启动脚本:**
+    *   **Windows:** 双击 `run_app.bat`。
+    *   **macOS/Linux:** 打开终端，进入项目文件夹，运行 `chmod +x run_app.sh` (仅首次需要)，然后运行 `./run_app.sh`。
+4.  脚本会自动安装依赖并启动服务。
+5.  打开浏览器访问 `http://localhost:8000`。
+
 ## 安装与运行
 
 1.  **下载项目:** 获取包含所有项目文件（`main.py`, `requirements.txt`, `run_app.bat`, `run_app.sh`, `LICENSE`, `README.md` 以及 `templates` 文件夹）的压缩包，并解压到本地任意位置。
